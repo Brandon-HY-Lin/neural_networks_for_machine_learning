@@ -260,7 +260,7 @@ def main():
     training.start()
     history_nesterov_momentum = training.get_history()
 
- ### RMSprop
+ ### RMSprop w/o momentum
     print "start training vanilla RMSprop w/o momentum"
 
     lr = 0.0004
@@ -273,6 +273,21 @@ def main():
     training = TrainProcess(optimizer, max_iter, print_period)
     training.start()
     history_vanilla_rms = training.get_history()
+
+### RMSprop w/ momentum
+    print "start training vanilla RMSprop w/o momentum"
+
+    lr = 0.0004
+    alpha = 0.9 # served as momentum in RMSprop
+    weight_decay = 0.999
+
+    w = theano.shared(w_init, 'w')
+    optimizer = RMSprop(cost_func, w, lr, alpha, eps=1e-8, weight_decay=weight_decay, reg=reg) 
+
+    training = TrainProcess(optimizer, max_iter, print_period)
+    training.start()
+    history_rms_momentum = training.get_history()
+
 
 
     ##############################################
@@ -299,12 +314,14 @@ def main():
     data_momentum = swapaxes(history_w_momentum)
     data_nesterov_momentum = swapaxes(history_nesterov_momentum)
     data_vanilla_rms = swapaxes(history_vanilla_rms)
+    data_rms_momentum = swapaxes(history_rms_momentum)
 
     data = np.array([data_gradient, data_momentum, 
-        data_nesterov_momentum, data_vanilla_rms])
+        data_nesterov_momentum, data_vanilla_rms,
+        data_rms_momentum])
 
     labels = ['gradient', 'vanilla momentum', 'Nesterov momentum',
-        'vanilla RMSprop w/o momentum']
+        'vanilla RMSprop w/o momentum', 'RMSprop w/ momentum']
 
     num_lines, num_axes, num_frames = data.shape
 
