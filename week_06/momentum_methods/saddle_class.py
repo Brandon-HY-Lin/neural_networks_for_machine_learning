@@ -329,7 +329,7 @@ def cost_func(w, reg):
     return w[0]**2 - w[1]**2 + reg*((w*w).sum())
 
 def main():
-    max_iter = 1000
+    max_iter = 420
     print_period = 10
     w_init = init_start_point()
     M = 2 # size of w_init
@@ -460,8 +460,8 @@ def main():
         data_rms_momentum, data_nesterov_rms, data_adam
         ])
 
-    labels = ['gradient', 'vanilla momentum', 'Nesterov momentum',
-        'vanilla RMSprop w/o momentum', 'RMSprop w/ momentum',
+    labels = ['Gradient', 'Momentum', 'Nesterov Momentum',
+        'RMS w/o momentum', 'RMS w/ momentum',
         'Nesterov RMS', 'Adam']
 
     num_lines, num_axes, num_frames = data.shape
@@ -482,7 +482,7 @@ def main():
     ax.set_xlabel("x")
     ax.set_ylabel("y")
     ax.set_zlabel("z")
-    ax.view_init(30, 220)
+    ax.view_init(50, 215)
         
     #   create animation callbac
     line_ani = animation.FuncAnimation(fig, update_lines, 
@@ -492,6 +492,7 @@ def main():
 
     line_ani
     plt.show()
+    #line_ani.save('saddle_animation_3d.gif', writer='imagemagick',fps=1000/100)
 
 if __name__ == '__main__':
     main()
