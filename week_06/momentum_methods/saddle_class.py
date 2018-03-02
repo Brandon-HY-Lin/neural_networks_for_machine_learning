@@ -88,6 +88,56 @@ class NesterovSGD:
     def get_weights(self):
         return self.w.get_value()
 
+class RMSprop:
+    # Init paramters are refereced from pytorch
+    # weight_decay: r = weight_decay * v + (1 - weight_decay) * g^2
+    # alpha: served as momentum ( v = alpha * v - (lr * g )/[(r+eps)^0.5]
+    def __init__(self, cost_func, params, lr, alpha, eps=1e-8, weight_decay=0,
+        reg=0.004):
+        
+        self.params = params
+        self.lr = lr
+        self.alpha = alpha
+        self.eps = eps
+        self.weight_decay = weight_decay
+        self.reg = reg
+
+        # define theano.shared parameters
+        self.w = self.params
+        size_w = self.w.get_value().shape
+
+        vw_init = np.zeros(size_w)
+        self.vw = theano.shared(vw_init, 'vw')
+
+        rw_init = np.zeros(size_w)
+        self.rw = theano.shared(rw_init, 'rw')
+
+        # define cost function
+        self.cost = cost_func(self.w, self.reg)
+
+        gw = T.grad(self.cost, self.w)
+
+        update_rw = self.weight_decay * self.rw + \
+            (1 - self.weight_decay) *gw *gw
+
+        update_vw = self.alpha * self.vw - \
+            self.lr*gw / (np.sqrt(update_rw) + eps)
+
+        update_w = self.w + update_vw
+
+        self.train = theano.function(
+            inputs=[],
+            updates=[(self.w, update_w), (self.vw, update_vw),
+                (self.rw, update_rw)],
+            outputs=[self.cost],
+        )
+
+    def step(self):
+        self.train()
+        return self.cost
+
+    def get_weights(self):
+        return self.w.get_value()
 
 class TrainProcess:
     def __init__(self, optimizer, max_iter, print_period=10):
@@ -209,7 +259,22 @@ def main():
     training = TrainProcess(optimizer, max_iter, print_period)
     training.start()
     history_nesterov_momentum = training.get_history()
-  
+
+ ### RMSprop
+    print "start training vanilla RMSprop w/o momentum"
+
+    lr = 0.0004
+    alpha = 0 # served as momentum in RMSprop
+    weight_decay = 0.999
+
+    w = theano.shared(w_init, 'w')
+    optimizer = RMSprop(cost_func, w, lr, alpha, eps=1e-8, weight_decay=weight_decay, reg=reg) 
+
+    training = TrainProcess(optimizer, max_iter, print_period)
+    training.start()
+    history_vanilla_rms = training.get_history()
+
+
     ##############################################
     # 3D animation
     ##############################################
@@ -233,8 +298,14 @@ def main():
     data_gradient = swapaxes(history_w)
     data_momentum = swapaxes(history_w_momentum)
     data_nesterov_momentum = swapaxes(history_nesterov_momentum)
-    data = np.array([data_gradient, data_momentum, data_nesterov_momentum])
-    labels = ['gradient', 'vanilla momentum', 'Nesterov momentum']
+    data_vanilla_rms = swapaxes(history_vanilla_rms)
+
+    data = np.array([data_gradient, data_momentum, 
+        data_nesterov_momentum, data_vanilla_rms])
+
+    labels = ['gradient', 'vanilla momentum', 'Nesterov momentum',
+        'vanilla RMSprop w/o momentum']
+
     num_lines, num_axes, num_frames = data.shape
 
     # create 3D axis
