@@ -189,6 +189,67 @@ class NesterovRMSprop:
         return self.w.get_value()
 
 
+class Adam:
+    # ADAptive Momentum
+    def __init__(self, cost_func, params, lr=0.001, betas=(0.9, 0.999), eps=1e-8, reg=0):
+        
+        self.params = params
+        self.lr = lr
+        self.betas = betas
+        self.eps = eps
+        self.reg = reg
+
+        self.weight_decay_L1 = self.betas[0]
+        self.weight_decay_L2 = self.betas[1]
+
+        # define theano.shared parameters
+        t_init = 0
+        self.t = theano.shared(t_init, 't')  # correction
+
+        self.w = self.params
+        size_w = self.w.get_value().shape
+
+        sw_init = np.zeros(size_w)
+        self.sw = theano.shared(sw_init, 'sw') # 1st moment (L1)
+
+        rw_init = np.zeros(size_w)
+        self.rw = theano.shared(rw_init, 'rw') # 2nd moment (L2)
+
+        # define cost function
+        self.cost = cost_func(self.w, self.reg)
+
+        gw = T.grad(self.cost, self.w)
+
+        update_t = self.t + 1
+
+        update_sw = self.weight_decay_L1 * self.sw + \
+            (1 - self.weight_decay_L1) * gw
+
+        update_rw = self.weight_decay_L2 * self.rw + \
+            (1 - self.weight_decay_L2) * gw * gw
+
+        correction_s = ( 1 - self.weight_decay_L1 ** update_t)
+        correction_r = ( 1 - self.weight_decay_L2 ** update_t)
+        sw_hat = update_sw / correction_s
+        rw_hat = update_rw /  correction_r
+
+        update_w = self.w - self.lr * sw_hat / (np.sqrt(rw_hat) + self.eps)
+
+        self.train = theano.function(
+            inputs=[],
+            updates=[(self.w, update_w), (self.sw, update_sw),
+                (self.rw, update_rw), (self.t, update_t)],
+            outputs=[self.cost],
+        )
+
+    def step(self):
+        self.train()
+        return self.cost
+
+    def get_weights(self):
+        return self.w.get_value()
+
+
 class TrainProcess:
     def __init__(self, optimizer, max_iter, print_period=10):
         self.optimizer = optimizer
@@ -268,8 +329,8 @@ def cost_func(w, reg):
     return w[0]**2 - w[1]**2 + reg*((w*w).sum())
 
 def main():
-    max_iter = 200
-    print_period = 5
+    max_iter = 1000
+    print_period = 10
     w_init = init_start_point()
     M = 2 # size of w_init
 
@@ -277,7 +338,7 @@ def main():
     print "start training vanilla gradient descent"
 
     #lr = 0.00004
-    lr = 0.004
+    lr = 0.0001
     reg = 0
 
     w = theano.shared(w_init, 'w')
@@ -289,7 +350,7 @@ def main():
 ### vanilla momentum
     print "start training vanilla momentum"
 
-    lr = 0.004
+    lr = 0.001
     momentum = 0.99
 
     w = theano.shared(w_init, 'w')
@@ -301,7 +362,7 @@ def main():
  ### Nesterov momentum
     print "start training Nesterov momentum"
 
-    lr = 0.004
+    lr = 0.001
     momentum = 0.99
 
     w = theano.shared(w_init, 'w')
@@ -313,7 +374,7 @@ def main():
  ### RMSprop w/o momentum
     print "start training vanilla RMSprop w/o momentum"
 
-    lr = 0.0004
+    lr = 0.0001
     alpha = 0 # served as momentum in RMSprop
     weight_decay = 0.999
 
@@ -325,9 +386,9 @@ def main():
     history_vanilla_rms = training.get_history()
 
 ### RMSprop w/ momentum
-    print "start training vanilla RMSprop w/o momentum"
+    print "start training RMSprop w/ momentum"
 
-    lr = 0.0004
+    lr = 0.0001
     alpha = 0.9 # served as momentum in RMSprop
     weight_decay = 0.999
 
@@ -339,9 +400,9 @@ def main():
     history_rms_momentum = training.get_history()
 
 ### Nesterov RMSprop w/ momentum
-    print "start training vanilla RMSprop w/o momentum"
+    print "start training Nesterov RMSprop"
 
-    lr = 0.0004
+    lr = 0.0001
     alpha = 0.9 # served as momentum in RMSprop
     weight_decay = 0.999
 
@@ -352,6 +413,18 @@ def main():
     training.start()
     history_nesterov_rms = training.get_history()
 
+### Adam
+    print "start training Adam"
+
+    lr = 0.005 # increase order by 2
+    betas = (0.9, 0.999) # [0]: L1 moment, [1] L2 moment 
+
+    w = theano.shared(w_init, 'w')
+    optimizer = Adam(cost_func, w, lr, betas=betas, eps=1e-8, reg=reg) 
+
+    training = TrainProcess(optimizer, max_iter, print_period)
+    training.start()
+    history_adam = training.get_history()
 
     ##############################################
     # 3D animation
@@ -379,14 +452,17 @@ def main():
     data_vanilla_rms = swapaxes(history_vanilla_rms)
     data_rms_momentum = swapaxes(history_rms_momentum)
     data_nesterov_rms = swapaxes(history_nesterov_rms)
+    data_adam= swapaxes(history_adam)
 
-    data = np.array([data_gradient, data_momentum, 
+    data = np.array([
+        data_gradient, data_momentum, 
         data_nesterov_momentum, data_vanilla_rms,
-        data_rms_momentum, data_nesterov_rms])
+        data_rms_momentum, data_nesterov_rms, data_adam
+        ])
 
     labels = ['gradient', 'vanilla momentum', 'Nesterov momentum',
         'vanilla RMSprop w/o momentum', 'RMSprop w/ momentum',
-        'Nesterov RMS']
+        'Nesterov RMS', 'Adam']
 
     num_lines, num_axes, num_frames = data.shape
 
@@ -412,7 +488,7 @@ def main():
     line_ani = animation.FuncAnimation(fig, update_lines, 
         frames=num_frames, 
         fargs=(data, lines, points, labels, ax, func_mesh), 
-        interval=100, blit=True, repeat=True)
+        interval=50, blit=True, repeat=True)
 
     line_ani
     plt.show()
