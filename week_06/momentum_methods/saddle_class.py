@@ -53,6 +53,42 @@ class SGD:
     def get_weights(self):
         return self.w.get_value()
 
+class NesterovSGD:
+    def __init__(self, cost_func, params, lr, reg, momentum):
+        self.params = params
+        self.lr = lr
+        self.reg = reg
+        self.momentum = momentum
+
+        # define theano.shared parameters
+        self.w = self.params
+        size_w = self.w.get_value().shape
+
+        vw_init = np.zeros(size_w)
+        self.vw = theano.shared(vw_init, 'vw')
+
+        # define cost function
+        self.cost = cost_func(self.w, self.reg)
+
+        #define gradient method
+        gw = T.grad(self.cost, self.w)
+        update_vw = self.momentum * self.vw - lr * gw
+        update_w = self.w + self.momentum * update_vw - lr * gw
+
+        self.train = theano.function(
+            inputs=[],
+            updates=[(self.w, update_w), (self.vw, update_vw)],
+            outputs=[self.cost],
+        )
+
+    def step(self):
+        self.train()
+        return self.cost
+
+    def get_weights(self):
+        return self.w.get_value()
+
+
 class TrainProcess:
     def __init__(self, optimizer, max_iter, print_period=10):
         self.optimizer = optimizer
@@ -84,7 +120,7 @@ class TrainProcess:
 # ref: https://en.wikipedia.org/wiki/Saddle_point
 
 def init_start_point():
-    return np.array([0.0, -1.0])
+    return np.array([0.8, -0.000001])
 
 def swapaxes(list_data):
     data = np.array(list_data)
@@ -132,8 +168,8 @@ def cost_func(w, reg):
     return w[0]**2 - w[1]**2 + reg*((w*w).sum())
 
 def main():
-    max_iter = 100
-    print_period = 10
+    max_iter = 200
+    print_period = 5
     w_init = init_start_point()
     M = 2 # size of w_init
 
@@ -142,7 +178,7 @@ def main():
 
     #lr = 0.00004
     lr = 0.004
-    reg = 0.01
+    reg = 0
 
     w = theano.shared(w_init, 'w')
     optimizer = SGD(cost_func, w, lr, reg, momentum=0)
@@ -153,16 +189,27 @@ def main():
 ### vanilla momentum
     print "start training vanilla momentum"
 
-    lr = 0.00004
-    reg = 0.01
-    alpha = 0.9
+    lr = 0.004
+    momentum = 0.99
 
     w = theano.shared(w_init, 'w')
-    optimizer = SGD(cost_func, w, lr, reg, momentum=alpha) 
+    optimizer = SGD(cost_func, w, lr, reg, momentum=momentum) 
     training = TrainProcess(optimizer, max_iter, print_period)
     training.start()
     history_w_momentum = training.get_history()
-   
+ 
+ ### Nesterov momentum
+    print "start training Nesterov momentum"
+
+    lr = 0.004
+    momentum = 0.99
+
+    w = theano.shared(w_init, 'w')
+    optimizer = NesterovSGD(cost_func, w, lr, reg, momentum=momentum) 
+    training = TrainProcess(optimizer, max_iter, print_period)
+    training.start()
+    history_nesterov_momentum = training.get_history()
+  
     ##############################################
     # 3D animation
     ##############################################
@@ -185,8 +232,9 @@ def main():
     # prepare data
     data_gradient = swapaxes(history_w)
     data_momentum = swapaxes(history_w_momentum)
-    data = np.array([data_gradient, data_momentum])
-    labels = ['gradient', 'vanilla momentum']
+    data_nesterov_momentum = swapaxes(history_nesterov_momentum)
+    data = np.array([data_gradient, data_momentum, data_nesterov_momentum])
+    labels = ['gradient', 'vanilla momentum', 'Nesterov momentum']
     num_lines, num_axes, num_frames = data.shape
 
     # create 3D axis
