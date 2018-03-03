@@ -17,8 +17,8 @@ import matplotlib.animation as animation
 from matplotlib import cm
 import mpl_toolkits.mplot3d.axes3d as p3
 
-#IS_SAVE=False
-IS_SAVE=True
+IS_SAVE=False
+#IS_SAVE=True
 
 # parameter: type should be theano.shared
 class SGD:
@@ -306,7 +306,8 @@ def func_mesh(ax):
     Z = z_saddle(X, Y)
 
     ax.plot_surface(X, Y, Z, cmap=cm.coolwarm, alpha=0.9,
-                                linewidth=10, antialiased=False)
+                                linewidth=0.05, antialiased=False,
+                                cstride=1, rstride=1, edgecolor='dimgrey')
 
 
 #   create animation callback

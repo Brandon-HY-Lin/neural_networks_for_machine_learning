@@ -42,7 +42,9 @@ def func_mesh(ax):
     X, Y = np.meshgrid(X, Y)
     Z = z_saddle(X, Y)
     ax.plot_surface(X, Y, Z, cmap=cm.coolwarm, alpha=0.8,
-                                linewidth=10, antialiased=False)
+                                linewidth=0.05, antialiased=False,
+                                cstride=1, rstride=1,
+                                edgecolor='dimgrey')
     #ax.plot_wireframe(X, Y, Z, rstride=2, cstride=2, color='k')
 
 
