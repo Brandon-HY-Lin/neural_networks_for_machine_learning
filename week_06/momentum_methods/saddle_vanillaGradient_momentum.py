@@ -41,14 +41,15 @@ def func_mesh(ax):
     Y = np.arange(y_min, y_max, 0.1)
     X, Y = np.meshgrid(X, Y)
     Z = z_saddle(X, Y)
-    ax.plot_surface(X, Y, Z, cmap=cm.coolwarm,
+    ax.plot_surface(X, Y, Z, cmap=cm.coolwarm, alpha=0.8,
                                 linewidth=10, antialiased=False)
+    #ax.plot_wireframe(X, Y, Z, rstride=2, cstride=2, color='k')
 
 
 #   create animation callback
 #   create animation function with callback
 def update_lines(num, dataLines, lines, points, labels, ax, func_mesh):
-    func_mesh(ax)
+    #func_mesh(ax)
 
     for line, point, data, label in zip(lines, points, dataLines, labels):
         line.set_data(data[0:2, :num])
@@ -61,7 +62,9 @@ def update_lines(num, dataLines, lines, points, labels, ax, func_mesh):
         point.set_marker('o')
         point.set_color(color)
 
-        ax.legend()
+        #func_mesh(ax)
+        ax.legend(loc='upper right')
+
 
     return lines + points
 
@@ -203,8 +206,10 @@ def main():
         fargs=(data, lines, points, labels, ax, func_mesh), 
         interval=100, blit=True, repeat=True)
 
+    func_mesh(ax)
     line_ani
     plt.show()
+    #line_ani.save('./saddle_animation_3d.gif', writer='imagemagick',fps=1000/100)
 
 if __name__ == '__main__':
     main()
