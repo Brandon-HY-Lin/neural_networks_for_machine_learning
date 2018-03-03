@@ -17,6 +17,9 @@ import matplotlib.animation as animation
 from matplotlib import cm
 import mpl_toolkits.mplot3d.axes3d as p3
 
+#IS_SAVE=False
+IS_SAVE=True
+
 # parameter: type should be theano.shared
 class SGD:
     # reg: regularization
@@ -301,14 +304,15 @@ def func_mesh(ax):
     Y = np.arange(y_min, y_max, 0.1)
     X, Y = np.meshgrid(X, Y)
     Z = z_saddle(X, Y)
-    ax.plot_surface(X, Y, Z, cmap=cm.coolwarm,
+
+    ax.plot_surface(X, Y, Z, cmap=cm.coolwarm, alpha=0.9,
                                 linewidth=10, antialiased=False)
 
 
 #   create animation callback
 #   create animation function with callback
 def update_lines(num, dataLines, lines, points, labels, ax, func_mesh):
-    func_mesh(ax)
+    #func_mesh(ax)
 
     for line, point, data, label in zip(lines, points, dataLines, labels):
         line.set_data(data[0:2, :num])
@@ -321,7 +325,7 @@ def update_lines(num, dataLines, lines, points, labels, ax, func_mesh):
         point.set_marker('o')
         point.set_color(color)
 
-        ax.legend()
+        ax.legend(loc='upper right')
 
     return lines + points
 
@@ -490,9 +494,15 @@ def main():
         fargs=(data, lines, points, labels, ax, func_mesh), 
         interval=50, blit=True, repeat=True)
 
-    line_ani
-    plt.show()
-    #line_ani.save('saddle_animation_3d.gif', writer='imagemagick',fps=1000/100)
+
+    func_mesh(ax)
+
+    if IS_SAVE == True:
+        line_ani.save('./saddle_animation_3d.gif', writer='imagemagick',fps=1000/100)
+        #line_ani.save('./saddle_animation_3d.mp4', writer='ffmpeg',fps=1000/100)
+    else:
+        line_ani
+        plt.show()
 
 if __name__ == '__main__':
     main()
