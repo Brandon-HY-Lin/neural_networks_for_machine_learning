@@ -27,8 +27,8 @@ import matplotlib.animation as animation
 from matplotlib import cm
 import mpl_toolkits.mplot3d.axes3d as p3
 
-#IS_SAVE=False
-IS_SAVE=True
+IS_SAVE=False
+#IS_SAVE=True
 
 # parameter: type should be theano.shared
 class SGD:
