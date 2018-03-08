@@ -546,8 +546,7 @@ def main():
     ax.set_xlabel("x")
     ax.set_ylabel("y")
     ax.set_zlabel("z")
-    #ax.view_init(50, 215)
-    ax.view_init(45, 315)
+    ax.view_init(50, 325)
         
     #   create animation callbac
     line_ani = animation.FuncAnimation(fig, update_lines, 
