@@ -546,7 +546,7 @@ def main():
     ax.set_xlabel("x")
     ax.set_ylabel("y")
     ax.set_zlabel("z")
-    ax.view_init(50, 325)
+    ax.view_init(40, 325)
         
     #   create animation callbac
     line_ani = animation.FuncAnimation(fig, update_lines, 
@@ -558,7 +558,7 @@ def main():
     func_mesh(ax, fig)
 
     if IS_SAVE == True:
-        line_ani.save('./momentum_values_animation_3d.gif', writer='imagemagick',fps=1000/100)
+        line_ani.save('./rprop_animation_3d.gif', writer='imagemagick',fps=1000/100)
 
     else:
         line_ani
