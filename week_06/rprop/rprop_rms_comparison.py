@@ -372,7 +372,7 @@ class TrainProcess:
 
 def init_start_point():
     #return np.array([0.8, -0.000001])
-    return np.array([2.5, 4.0])
+    return np.array([3.5, 4.0])
 
 def swapaxes(list_data):
     data = np.array(list_data)
@@ -390,7 +390,7 @@ def z_beale(x, y):
         (2.25 - x + x*(y**2))**2 + \
         (2.625 - x + x*(y**3))**2
 
-def func_mesh(ax):
+def func_mesh(ax, fig):
 #    x_max = 2
 #    x_min = -2
 #    y_max = 2
@@ -406,10 +406,11 @@ def func_mesh(ax):
     X, Y = np.meshgrid(X, Y)
     Z = cost_func_withous_reg(X, Y)
 
-    ax.plot_surface(X, Y, Z, cmap=cm.jet, alpha=0.8,
+    surf = ax.plot_surface(X, Y, Z, cmap=cm.jet, alpha=0.8,
                                 norm=LogNorm(), antialiased=False,
                                 cstride=1, rstride=1, edgecolor='none')
 
+    fig.colorbar(surf, shrink=0.5, aspect=5) 
 
 #   create animation callback
 #   create animation function with callback
@@ -439,15 +440,15 @@ def cost_func(w, reg):
     return cost_func_withous_reg(w[0], w[1]) + reg*((w*w).sum())
 
 def main():
-    max_iter = 400
-    print_period = 10
+    max_iter = 4000
+    print_period = 50
     w_init = init_start_point()
     M = 2 # size of w_init
 
 ### momentum 
     print "start training using Rprop" 
 
-    initial_step_size = 0.1
+    initial_step_size = 0.001
     eta_plus = 1.2
     eta_minus = 0.5
     min_step = 1e-6
@@ -466,7 +467,7 @@ def main():
 ### RMSprop w/ momentum
     print "start training RMSprop w/ momentum"
 
-    lr = 0.0001
+    lr = 0.006
     alpha = 0.9 # served as momentum in RMSprop
     weight_decay = 0.999
 
@@ -481,9 +482,9 @@ def main():
     print "start training with momentum" 
 
     #lr = 0.00004
-    lr = 0.0001
+    lr = 0.000001
     reg = 0
-    momentum = 0.99
+    momentum = 0.9
 
     w = theano.shared(w_init, 'w')
     optimizer = SGD(cost_func, w, lr, reg, momentum=momentum)
@@ -553,7 +554,7 @@ def main():
         interval=50, blit=True, repeat=True)
 
 
-    func_mesh(ax)
+    func_mesh(ax, fig)
 
     if IS_SAVE == True:
         line_ani.save('./momentum_values_animation_3d.gif', writer='imagemagick',fps=1000/100)
