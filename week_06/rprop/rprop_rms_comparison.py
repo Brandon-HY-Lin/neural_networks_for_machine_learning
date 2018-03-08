@@ -25,6 +25,7 @@ import theano.tensor as T
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from matplotlib import cm
+from matplotlib.colors import LogNorm
 import mpl_toolkits.mplot3d.axes3d as p3
 
 IS_SAVE=False
@@ -362,7 +363,8 @@ class TrainProcess:
 # ref: https://en.wikipedia.org/wiki/Saddle_point
 
 def init_start_point():
-    return np.array([0.8, -0.000001])
+    #return np.array([0.8, -0.000001])
+    return np.array([2.5, 4.0])
 
 def swapaxes(list_data):
     data = np.array(list_data)
@@ -375,20 +377,30 @@ def z_saddle(x, y):
 def z_cone(x, y):
     return x**2 + y**2
 
+def z_beale(x, y):
+    return (1.5 - x + x*y)**2 + \
+        (2.25 - x + x*(y**2))**2 + \
+        (2.625 - x + x*(y**3))**2
+
 def func_mesh(ax):
-    x_max = 2
-    x_min = -2
-    y_max = 2
-    y_min = -2
+#    x_max = 2
+#    x_min = -2
+#    y_max = 2
+#    y_min = -2
+    x_max = 4.5
+    x_min = -4.5
+    y_max = 4.5
+    y_min = -4.5
+
 
     X = np.arange(x_min, x_max, 0.1)
     Y = np.arange(y_min, y_max, 0.1)
     X, Y = np.meshgrid(X, Y)
     Z = cost_func_withous_reg(X, Y)
 
-    ax.plot_surface(X, Y, Z, cmap=cm.coolwarm, alpha=0.9,
-                                linewidth=0.05, antialiased=False,
-                                cstride=1, rstride=1, edgecolor='dimgrey')
+    ax.plot_surface(X, Y, Z, cmap=cm.jet, alpha=0.8,
+                                norm=LogNorm(), antialiased=False,
+                                cstride=1, rstride=1, edgecolor='none')
 
 
 #   create animation callback
@@ -412,7 +424,8 @@ def update_lines(num, dataLines, lines, points, labels, ax, func_mesh):
     return lines + points
 
 def cost_func_withous_reg(X, Y):
-    return z_cone(X, Y)
+    #return z_cone(X, Y)
+    return z_beale(X, Y)
 
 def cost_func(w, reg):
     return cost_func_withous_reg(w[0], w[1]) + reg*((w*w).sum())
@@ -513,13 +526,17 @@ def main():
  
     #   Decorations:
     #       set axis boundary, axis label, legend
-    ax.set_xlim(-2, 2)
-    ax.set_ylim(-2, 2)
-    ax.set_zlim(-4, 4)
+    #ax.set_xlim(-2, 2)
+    #ax.set_ylim(-2, 2)
+    #ax.set_zlim(-4, 4)
+    ax.set_xlim(-4.5, 4.5)
+    ax.set_ylim(-4.5, 4.5)
+
     ax.set_xlabel("x")
     ax.set_ylabel("y")
     ax.set_zlabel("z")
-    ax.view_init(50, 215)
+    #ax.view_init(50, 215)
+    ax.view_init(45, 315)
         
     #   create animation callbac
     line_ani = animation.FuncAnimation(fig, update_lines, 
