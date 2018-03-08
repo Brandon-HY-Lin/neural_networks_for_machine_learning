@@ -10,9 +10,11 @@
 
 ########################################################
 #
-# This example is inspired from Louis Tiao's work
-#   http://tiao.io/notes/visualizing-and-animating-optimization-algorithms-with-matplotlib/
-#
+# This example is inspired from 
+#   1. Centre for Speech Technology Research at U. of Edinburgh
+#       https://github.com/CSTR-Edinburgh/merlin/blob/master/src/training_schemes/rprop.py
+#   2. Louis Tiao's work
+#       http://tiao.io/notes/visualizing-and-animating-optimization-algorithms-with-matplotlib/
 ########################################################
 
 
