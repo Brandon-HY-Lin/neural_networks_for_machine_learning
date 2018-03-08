@@ -8,6 +8,14 @@
 #
 #-------------------------------------------------------------------------
 
+########################################################
+#
+# This example is inspired from Louis Tiao's work
+#   http://tiao.io/notes/visualizing-and-animating-optimization-algorithms-with-matplotlib/
+#
+########################################################
+
+
 # define cost function of saddle function (z = x^2 - y^2)
 # set initial point of (x, y)
 # define the families of gradient descent methods
