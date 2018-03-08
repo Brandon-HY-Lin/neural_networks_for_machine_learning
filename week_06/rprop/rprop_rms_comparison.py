@@ -347,8 +347,7 @@ class TrainProcess:
             
             if i % self.print_period == 0:
                 w_value = self.optimizer.get_weights()
-                cost_value = z_saddle(w_value[0], w_value[1])
-                #cost_value = z_cone(w_value[0], w_value[1])
+                cost_value = cost_func_withous_reg(w_value[0], w_value[1])
                 value = np.append(w_value, cost_value)
 
                 if len(self.history) == 0:
@@ -385,8 +384,7 @@ def func_mesh(ax):
     X = np.arange(x_min, x_max, 0.1)
     Y = np.arange(y_min, y_max, 0.1)
     X, Y = np.meshgrid(X, Y)
-    Z = z_saddle(X, Y)
-    #Z = z_cone(X, Y)
+    Z = cost_func_withous_reg(X, Y)
 
     ax.plot_surface(X, Y, Z, cmap=cm.coolwarm, alpha=0.9,
                                 linewidth=0.05, antialiased=False,
@@ -413,9 +411,11 @@ def update_lines(num, dataLines, lines, points, labels, ax, func_mesh):
 
     return lines + points
 
+def cost_func_withous_reg(X, Y):
+    return z_cone(X, Y)
+
 def cost_func(w, reg):
-    return w[0]**2 - w[1]**2 + reg*((w*w).sum())
-    #return w[0]**2 + w[1]**2 + reg*((w*w).sum())
+    return cost_func_withous_reg(w[0], w[1]) + reg*((w*w).sum())
 
 def main():
     max_iter = 400
