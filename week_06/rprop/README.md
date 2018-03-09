@@ -8,17 +8,17 @@ I implemented this animation based on
   * [Code made by Centre for Speech Technology Research at U. of Edinburgh](https://github.com/CSTR-Edinburgh/merlin/blob/master/src/training_schemes/rprop.py)
   * [Louis Tiao's work](http://tiao.io/notes/visualizing-and-animating-optimization-algorithms-with-matplotlib/)
 
-# Execution
+### Execution
 ```sh
 $ python rprop_rms_comparison.py
 ```
 
-# Saving GIF Animation
+### Saving GIF Animation
 Simply set variable IS_SAVE to True in "rprop_rms_comparison.py"
 ```python
 IS_SAVE=True
 ```
 
-# License
+### License
 
 Apache License, Version 2.0
