@@ -358,7 +358,7 @@ class TrainProcess:
             
             if i % self.print_period == 0:
                 w_value = self.optimizer.get_weights()
-                cost_value = cost_func_withous_reg(w_value[0], w_value[1])
+                cost_value = cost_func_without_reg(w_value[0], w_value[1])
                 value = np.append(w_value, cost_value)
 
                 if len(self.history) == 0:
@@ -406,7 +406,7 @@ def func_mesh(ax, fig):
     X = np.arange(x_min, x_max, 0.1)
     Y = np.arange(y_min, y_max, 0.1)
     X, Y = np.meshgrid(X, Y)
-    Z = cost_func_withous_reg(X, Y)
+    Z = cost_func_without_reg(X, Y)
 
     surf = ax.plot_surface(X, Y, Z, cmap=cm.jet, alpha=0.8,
                                 norm=LogNorm(), antialiased=False,
@@ -434,12 +434,12 @@ def update_lines(num, dataLines, lines, points, labels, ax, func_mesh):
 
     return lines + points
 
-def cost_func_withous_reg(X, Y):
+def cost_func_without_reg(X, Y):
     #return z_cone(X, Y)
     return z_beale(X, Y)
 
 def cost_func(w, reg):
-    return cost_func_withous_reg(w[0], w[1]) + reg*((w*w).sum())
+    return cost_func_without_reg(w[0], w[1]) + reg*((w*w).sum())
 
 def main():
     max_iter = 4000
