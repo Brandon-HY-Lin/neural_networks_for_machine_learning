@@ -1,4 +1,4 @@
-# Comparison Between Rprop, RMSprop, and Momentum
+# Training Speed of Rprop, RMSprop, and Momentum
 
 ![N|Solid](https://github.com/Brandon-HY-Lin/neural_networks_for_machine_learning/blob/master/week_06/rprop/rprop_animation_3d.gif?raw=true)
 
